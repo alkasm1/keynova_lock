@@ -10,57 +10,69 @@
     }
   </script>
   <style>
-    body {
-      font-family: Arial;
-      background: #121212;
-      color: #fff;
-      padding: 20px;
-      text-align: center;
-    }
-    input[type="file"] {
-      margin-top: 20px;
-    }
-    .result {
-      margin-top: 30px;
-      font-size: 1.2em;
-    }
-    .success {
-      color: #00ff99;
-    }
-    .fail {
-      color: #ff4444;
-    }
+    body { font-family: Arial; background: #121212; color: #fff; padding: 20px; text-align: center; }
+    input[type="file"] { margin-top: 10px; }
+    button { margin: 10px; padding: 10px 20px; font-size: 1em; }
+    .result { margin-top: 30px; font-size: 1.2em; }
+    .success { color: #00ff99; }
+    .fail { color: #ff4444; }
   </style>
 </head>
 <body>
 
   <h1>🔐 Keynova Lock</h1>
-  <p>ارفع المفتاح البصري لفتح التطبيق</p>
+  <p>اختر صورتك الهندسية كمفتاح ثم استخدمها لفتح التطبيق</p>
 
-  <input type="file" id="imageInput" accept="image/*" />
+  <h3>🖼️ تعيين صورة كمفتاح</h3>
+  <input type="file" id="setKeyInput" accept="image/*" />
+  <button onclick="setKey()">حفظ الصورة كمفتاح شخصي</button>
+
+  <h3>🔓 محاولة الفتح</h3>
+  <input type="file" id="verifyInput" accept="image/*" />
+  <button onclick="verifyKey()">تحقق من الصورة</button>
+
   <div class="result" id="result"></div>
 
   <script>
-    const validHash = "2cb6792233fe38d66196100874c837fb6beb022d7bd749cb50bd4363f01b0d47";
-
-    document.getElementById("imageInput").addEventListener("change", async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const arrayBuffer = await file.arrayBuffer();
-      const hashBuffer = await crypto.subtle.digest("SHA-256", arrayBuffer);
+    async function calculateHash(file) {
+      const buffer = await file.arrayBuffer();
+      const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
+    async function setKey() {
+      const file = document.getElementById("setKeyInput").files[0];
+      if (!file) return alert("يرجى اختيار صورة لتعيينها كمفتاح");
+
+      const hash = await calculateHash(file);
+      localStorage.setItem("keynova_hash", hash);
+      document.getElementById("result").innerHTML = "✅ تم حفظ الصورة كمفتاح شخصي!";
+      document.getElementById("result").className = "result success";
+    }
+
+    async function verifyKey() {
+      const file = document.getElementById("verifyInput").files[0];
+      if (!file) return alert("يرجى اختيار صورة للتحقق منها");
+
+      const storedHash = localStorage.getItem("keynova_hash");
+      if (!storedHash) {
+        document.getElementById("result").innerHTML = "⚠️ لم يتم تعيين مفتاح بعد!";
+        document.getElementById("result").className = "result fail";
+        return;
+      }
+
+      const currentHash = await calculateHash(file);
       const resultDiv = document.getElementById("result");
-      if (hashHex === validHash) {
-        resultDiv.innerHTML = "✅ تم التحقق! التطبيق مفتوح الآن.";
+
+      if (currentHash === storedHash) {
+        resultDiv.innerHTML = "✅ تم التحقق! الصورة تطابق المفتاح.";
         resultDiv.className = "result success";
       } else {
-        resultDiv.innerHTML = "❌ مفتاح خاطئ! لا يمكن فتح التطبيق.";
+        resultDiv.innerHTML = "❌ الصورة لا تطابق المفتاح المخزن.";
         resultDiv.className = "result fail";
       }
-    });
+    }
   </script>
 
 </body>
