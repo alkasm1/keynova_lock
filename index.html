@@ -11,8 +11,7 @@
   </script>
   <style>
     body { font-family: Arial; background: #121212; color: #fff; padding: 20px; text-align: center; }
-    input[type="file"] { margin-top: 10px; }
-    button { margin: 10px; padding: 10px 20px; font-size: 1em; }
+    input[type="file"], button { margin-top: 10px; padding: 10px; font-size: 1em; }
     .result { margin-top: 30px; font-size: 1.2em; }
     .success { color: #00ff99; }
     .fail { color: #ff4444; }
@@ -21,17 +20,26 @@
 <body>
 
   <h1>🔐 Keynova Lock</h1>
-  <p>اختر صورتك الهندسية كمفتاح ثم استخدمها لفتح التطبيق</p>
-
-  <h3>🖼️ تعيين صورة كمفتاح</h3>
-  <input type="file" id="setKeyInput" accept="image/*" />
-  <button onclick="setKey()">حفظ الصورة كمفتاح شخصي</button>
+  <p>أدخل صورتك للتحقق قبل الوصول إلى الإعدادات</p>
 
   <h3>🔓 محاولة الفتح</h3>
   <input type="file" id="verifyInput" accept="image/*" />
   <button onclick="verifyKey()">تحقق من الصورة</button>
-
   <div class="result" id="result"></div>
+
+  <!-- الإعدادات تظهر فقط بعد التحقق -->
+  <div id="securedActions" style="display:none;">
+    <h3>🔧 خيارات بعد التحقق</h3>
+    <button onclick="goToKeyChange()">🛠️ تغيير المفتاح</button>
+    <button onclick="goToProtection()">🗂️ حماية تطبيق أو ملف</button>
+  </div>
+
+  <!-- واجهة تغيير المفتاح -->
+  <div id="keySection" style="display:none;">
+    <h3>🖼️ تعيين صورة جديدة كمفتاح</h3>
+    <input type="file" id="setKeyInput" accept="image/*" />
+    <button onclick="setKey()">حفظ المفتاح الجديد</button>
+  </div>
 
   <script>
     async function calculateHash(file) {
@@ -41,23 +49,13 @@
       return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    async function setKey() {
-      const file = document.getElementById("setKeyInput").files[0];
-      if (!file) return alert("يرجى اختيار صورة لتعيينها كمفتاح");
-
-      const hash = await calculateHash(file);
-      localStorage.setItem("keynova_hash", hash);
-      document.getElementById("result").innerHTML = "✅ تم حفظ الصورة كمفتاح شخصي!";
-      document.getElementById("result").className = "result success";
-    }
-
     async function verifyKey() {
       const file = document.getElementById("verifyInput").files[0];
       if (!file) return alert("يرجى اختيار صورة للتحقق منها");
 
       const storedHash = localStorage.getItem("keynova_hash");
       if (!storedHash) {
-        document.getElementById("result").innerHTML = "⚠️ لم يتم تعيين مفتاح بعد!";
+        document.getElementById("result").innerHTML = "⚠️ لم يتم تعيين مفتاح من قبل!";
         document.getElementById("result").className = "result fail";
         return;
       }
@@ -66,12 +64,29 @@
       const resultDiv = document.getElementById("result");
 
       if (currentHash === storedHash) {
-        resultDiv.innerHTML = "✅ تم التحقق! الصورة تطابق المفتاح.";
+        resultDiv.innerHTML = "✅ تم التحقق! يمكنك الآن تعديل الإعدادات.";
         resultDiv.className = "result success";
+        document.getElementById("securedActions").style.display = "block";
       } else {
         resultDiv.innerHTML = "❌ الصورة لا تطابق المفتاح المخزن.";
         resultDiv.className = "result fail";
       }
+    }
+
+    async function setKey() {
+      const file = document.getElementById("setKeyInput").files[0];
+      if (!file) return alert("يرجى اختيار صورة كمفتاح جديد");
+      const hash = await calculateHash(file);
+      localStorage.setItem("keynova_hash", hash);
+      alert("✅ تم تعيين المفتاح الجديد بنجاح!");
+    }
+
+    function goToKeyChange() {
+      document.getElementById("keySection").style.display = "block";
+    }
+
+    function goToProtection() {
+      alert("🛡️ سيتم تنفيذ حماية للملف أو التطبيق لاحقًا هنا!");
     }
   </script>
 
