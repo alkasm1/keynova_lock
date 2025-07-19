@@ -10,12 +10,37 @@
     }
   </script>
   <style>
-    body { font-family: 'Tajawal', Arial; background: #1f1f1f; color: #fff; padding: 20px; text-align: center; }
-    input[type="file"], button, select { margin-top: 10px; padding: 10px; font-size: 1em; border-radius: 5px; }
-    button { background: #ff8800; color: #fff; border: none; cursor: pointer; }
-    button:hover { background: #e67600; }
-    select { background: #2c2c2c; color: #fff; border: 1px solid #666; }
-    .result { margin-top: 30px; font-size: 1.2em; }
+    body {
+      font-family: 'Tajawal', Arial;
+      background: #1f1f1f;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    input[type="file"], button, select {
+      margin-top: 10px;
+      padding: 10px;
+      font-size: 1em;
+      border-radius: 6px;
+    }
+    button {
+      background: #ff8800;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e67600;
+    }
+    select {
+      background: #2c2c2c;
+      color: #fff;
+      border: 1px solid #666;
+    }
+    .result {
+      margin-top: 30px;
+      font-size: 1.2em;
+    }
     .success { color: #00ff99; }
     .fail { color: #ff4444; }
     h1 { color: #ff8800; }
@@ -24,7 +49,7 @@
 <body>
 
   <h1>🔐 Keynova Lock</h1>
-  <p>التحقق بالمفتاح البصري قبل الوصول لإعدادات التطبيق</p>
+  <p>التحقق بالبصمة البصرية قبل الوصول لإعدادات التطبيق</p>
 
   <!-- واجهة التحقق -->
   <h3>🔓 محاولة الفتح</h3>
@@ -32,21 +57,21 @@
   <button onclick="verifyKey()">تحقق من الصورة</button>
   <div class="result" id="result"></div>
 
-  <!-- خيارات تظهر بعد التحقق -->
+  <!-- إعدادات بعد التحقق -->
   <div id="securedActions" style="display:none;">
-    <h3>🔧 خيارات الإعداد</h3>
+    <h3>🔧 إعدادات Keynova</h3>
     <button onclick="goToKeyChange()">🛠️ تغيير المفتاح</button>
-    <button onclick="goToProtection()">🗂️ حماية تطبيق أو ملف</button>
+    <button onclick="goToProtection()">🗂️ حماية الملفات / التطبيقات</button>
   </div>
 
-  <!-- واجهة تغيير المفتاح -->
+  <!-- تغيير المفتاح -->
   <div id="keySection" style="display:none;">
     <h3>🖼️ تعيين صورة جديدة كمفتاح</h3>
     <input type="file" id="setKeyInput" accept="image/*" />
     <button onclick="setKey()">حفظ المفتاح الجديد</button>
   </div>
 
-  <!-- واجهة حماية التطبيقات أو الملفات -->
+  <!-- حماية الملفات -->
   <div id="protectionSection" style="display:none;">
     <h3>🛡️ الحماية البصرية</h3>
     <p>اختر الهدف الذي تريد حمايته بواسطة المفتاح البصري:</p>
@@ -60,9 +85,12 @@
     </select>
 
     <button onclick="protectSelected()">🔒 تطبيق الحماية</button>
-    <div id="protectionResult" class="result"></div>
+    <button onclick="clearProtection()">🧹 إلغاء الحماية</button>
+
+    <div id="protectionStatus" class="result"></div>
   </div>
 
+  <!-- الأكواد البرمجية -->
   <script>
     async function calculateHash(file) {
       const buffer = await file.arrayBuffer();
@@ -77,7 +105,7 @@
 
       const storedHash = localStorage.getItem("keynova_hash");
       if (!storedHash) {
-        document.getElementById("result").innerHTML = "⚠️ لم يتم تعيين مفتاح مسبقًا.";
+        document.getElementById("result").innerHTML = "⚠️ لم يتم تعيين مفتاح سابقًا.";
         document.getElementById("result").className = "result fail";
         return;
       }
@@ -100,7 +128,7 @@
       if (!file) return alert("يرجى اختيار صورة لتعيينها كمفتاح جديد");
       const hash = await calculateHash(file);
       localStorage.setItem("keynova_hash", hash);
-      alert("✅ تم حفظ المفتاح الجديد!");
+      alert("✅ تم حفظ المفتاح الجديد بنجاح!");
     }
 
     function goToKeyChange() {
@@ -109,22 +137,38 @@
 
     function goToProtection() {
       document.getElementById("protectionSection").style.display = "block";
+      const storedTarget = localStorage.getItem("protected_target");
+      const statusDiv = document.getElementById("protectionStatus");
+
+      if (storedTarget) {
+        statusDiv.innerHTML = `✅ الحماية مفعّلة على: <strong>${storedTarget}</strong>`;
+        statusDiv.className = "result success";
+      } else {
+        statusDiv.innerHTML = "⚠️ لا توجد حماية مفعّلة حالياً.";
+        statusDiv.className = "result fail";
+      }
     }
 
     function protectSelected() {
       const target = document.getElementById("protectedTarget").value;
-      const result = document.getElementById("protectionResult");
+      const statusDiv = document.getElementById("protectionStatus");
 
       if (!target) {
-        result.innerHTML = "⚠️ يرجى اختيار هدف للحماية.";
-        result.className = "result fail";
+        statusDiv.innerHTML = "⚠️ يرجى اختيار هدف للحماية.";
+        statusDiv.className = "result fail";
         return;
       }
 
-      result.innerHTML = `✅ تم تفعيل الحماية على "${target}" باستخدام المفتاح البصري.`;
-      result.className = "result success";
+      localStorage.setItem("protected_target", target);
+      statusDiv.innerHTML = `✅ تم تفعيل الحماية على: <strong>${target}</strong>`;
+      statusDiv.className = "result success";
+    }
 
-      // يمكن لاحقًا حفظ الحماية في localStorage أو إرسالها لسيرفر
+    function clearProtection() {
+      localStorage.removeItem("protected_target");
+      const statusDiv = document.getElementById("protectionStatus");
+      statusDiv.innerHTML = "🧹 تم إلغاء الحماية.";
+      statusDiv.className = "result fail";
     }
   </script>
 
