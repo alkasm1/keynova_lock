@@ -1,0 +1,15 @@
+name: Android APK Builder
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build APK
+        uses: android-actions/build-android@v1
+        with:
+          build-task: assembleDebug
+      - uses: actions/upload-artifact@v3
+        with:
+          name: keynova-lock-apk
+          path: app/build/outputs/apk/debug/*.apk
