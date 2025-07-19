@@ -3,12 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <title>Keynova Lock</title>
+
+  <!-- روابط PWA و الأيقونة -->
   <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon.png" type="image/png" />
+  <meta name="theme-color" content="#ff8800" />
+
+  <!-- تسجيل Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js");
     }
   </script>
+
   <style>
     body {
       font-family: 'Tajawal', Arial;
@@ -56,7 +63,7 @@
 <body>
 
   <h1>🔐 Keynova Lock</h1>
-  <p>تحقق بصري قبل الوصول للإعدادات</p>
+  <p>نظام تحقق هندسي ذكي</p>
 
   <!-- واجهة التحقق -->
   <h3>🔓 محاولة الفتح</h3>
@@ -73,30 +80,29 @@
 
   <!-- تغيير المفتاح -->
   <div id="keySection" style="display:none;">
-    <h3>🖼️ تعيين صورة جديدة كمفتاح</h3>
+    <h3>🖼️ تعيين صورة كمفتاح جديد</h3>
     <input type="file" id="setKeyInput" accept="image/*" />
-    <button onclick="setKey()">حفظ المفتاح الجديد</button>
+    <button onclick="setKey()">حفظ المفتاح</button>
   </div>
 
-  <!-- حماية الملفات -->
+  <!-- واجهة الحماية -->
   <div id="protectionSection" style="display:none;">
     <h3>🛡️ الحماية البصرية</h3>
-    <p>اختر الهدف الذي تريد حمايته بواسطة المفتاح البصري:</p>
-
     <select id="protectedTarget">
-      <option value="">— اختر —</option>
+      <option value="">— اختر الهدف —</option>
       <option value="images">📸 الصور</option>
       <option value="docs">📄 المستندات</option>
       <option value="apps">📱 التطبيقات</option>
-      <option value="custom">🧩 اختيار مخصص</option>
+      <option value="custom">🧩 مخصص</option>
     </select>
-
+    <br />
     <button onclick="protectSelected()">🔒 تطبيق الحماية</button>
     <button onclick="clearProtection()">🧹 إلغاء الحماية</button>
 
-    <div id="protectionStatus" class="result"></div>
+    <div class="result" id="protectionStatus"></div>
   </div>
 
+  <!-- الأكواد -->
   <script>
     async function calculateHash(file) {
       const buffer = await file.arrayBuffer();
@@ -110,9 +116,10 @@
       if (!file) return alert("يرجى اختيار صورة للتحقق منها");
 
       const storedHash = localStorage.getItem("keynova_hash");
+
       if (!storedHash) {
-        document.getElementById("result").innerHTML = "⚠️ لم يتم تعيين مفتاح مسبقًا.";
-        document.getElementById("result").className = "result fail";
+        alert("🔒 لا يوجد مفتاح محفوظ، يرجى تعيين مفتاح أولًا");
+        goToKeyChange();
         return;
       }
 
@@ -124,29 +131,28 @@
         resultDiv.className = "result success";
         document.getElementById("securedActions").style.display = "block";
 
-        // ⏳ مؤقت الجلسة — يغلق الواجهة بعد 10 دقائق
         setTimeout(() => {
-          alert("⏳ انتهت صلاحية الجلسة! يرجى التحقق من جديد.");
+          alert("⏳ انتهت صلاحية الجلسة، يرجى إعادة التحقق");
           document.getElementById("securedActions").style.display = "none";
           document.getElementById("keySection").style.display = "none";
           document.getElementById("protectionSection").style.display = "none";
-        }, 600000); // 10 دقائق = 600000 ملي ثانية
+        }, 600000);
       } else {
-        resultDiv.innerHTML = "❌ الصورة لا تطابق المفتاح المخزن.";
+        resultDiv.innerHTML = "❌ الصورة لا تطابق المفتاح.";
         resultDiv.className = "result fail";
       }
     }
 
     async function setKey() {
       const file = document.getElementById("setKeyInput").files[0];
-      if (!file) return alert("يرجى اختيار صورة لتعيينها كمفتاح جديد");
+      if (!file) return alert("يرجى اختيار صورة لتعيينها");
 
-      const confirmChange = confirm("هل أنت متأكد أنك تريد تغيير المفتاح الحالي؟");
+      const confirmChange = confirm("هل أنت متأكد من تغيير المفتاح؟");
       if (!confirmChange) return;
 
       const hash = await calculateHash(file);
       localStorage.setItem("keynova_hash", hash);
-      alert("✅ تم حفظ المفتاح الجديد بنجاح!");
+      alert("✅ تم حفظ المفتاح الجديد بنجاح");
     }
 
     function goToKeyChange() {
@@ -162,7 +168,7 @@
         statusDiv.innerHTML = `✅ الحماية مفعّلة على: <strong>${storedTarget}</strong>`;
         statusDiv.className = "result success";
       } else {
-        statusDiv.innerHTML = "⚠️ لا توجد حماية مفعّلة حالياً.";
+        statusDiv.innerHTML = "⚠️ لا توجد حماية حالية";
         statusDiv.className = "result fail";
       }
     }
@@ -172,20 +178,20 @@
       const statusDiv = document.getElementById("protectionStatus");
 
       if (!target) {
-        statusDiv.innerHTML = "⚠️ يرجى اختيار هدف للحماية.";
+        statusDiv.innerHTML = "⚠️ يرجى اختيار هدف";
         statusDiv.className = "result fail";
         return;
       }
 
       localStorage.setItem("protected_target", target);
-      statusDiv.innerHTML = `✅ تم تفعيل الحماية على: <strong>${target}</strong>`;
+      statusDiv.innerHTML = `✅ تم حماية: <strong>${target}</strong>`;
       statusDiv.className = "result success";
     }
 
     function clearProtection() {
       localStorage.removeItem("protected_target");
       const statusDiv = document.getElementById("protectionStatus");
-      statusDiv.innerHTML = "🧹 تم إلغاء الحماية.";
+      statusDiv.innerHTML = "🧹 تم إلغاء الحماية";
       statusDiv.className = "result fail";
     }
   </script>
