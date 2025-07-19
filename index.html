@@ -4,12 +4,10 @@
   <meta charset="UTF-8" />
   <title>Keynova Lock</title>
 
-  <!-- روابط PWA و الأيقونة -->
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.png" type="image/png" />
   <meta name="theme-color" content="#ff8800" />
 
-  <!-- تسجيل Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js");
@@ -63,7 +61,6 @@
 <body>
 
   <h1>🔐 Keynova Lock</h1>
-  <p>نظام تحقق هندسي ذكي</p>
 
   <!-- واجهة التحقق -->
   <h3>🔓 محاولة الفتح</h3>
@@ -76,6 +73,7 @@
     <h3>🔧 إعدادات Keynova</h3>
     <button onclick="goToKeyChange()">🛠️ تغيير المفتاح</button>
     <button onclick="goToProtection()">🗂️ حماية الملفات / التطبيقات</button>
+    <button onclick="removeKey()">🗑️ إزالة المفتاح</button>
   </div>
 
   <!-- تغيير المفتاح -->
@@ -116,7 +114,6 @@
       if (!file) return alert("يرجى اختيار صورة للتحقق منها");
 
       const storedHash = localStorage.getItem("keynova_hash");
-
       if (!storedHash) {
         alert("🔒 لا يوجد مفتاح محفوظ، يرجى تعيين مفتاح أولًا");
         goToKeyChange();
@@ -193,6 +190,15 @@
       const statusDiv = document.getElementById("protectionStatus");
       statusDiv.innerHTML = "🧹 تم إلغاء الحماية";
       statusDiv.className = "result fail";
+    }
+
+    function removeKey() {
+      const confirmDelete = confirm("هل أنت متأكد من إزالة المفتاح؟");
+      if (!confirmDelete) return;
+
+      localStorage.removeItem("keynova_hash");
+      alert("✅ تمت إزالة المفتاح");
+      document.getElementById("securedActions").style.display = "none";
     }
   </script>
 
