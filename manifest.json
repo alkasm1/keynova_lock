@@ -1,8 +1,8 @@
 {
   "name": "Keynova Lock",
   "short_name": "Keynova",
-  "description": "تطبيق تحقق هندسي آمن باستخدام البصمة البصرية لحماية الملفات والإعدادات.",
-  "start_url": "index.html",
+  "description": "نظام تحقق هندسي ذكي يحمي بياناتك بصريًا.",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1f1f1f",
   "theme_color": "#ff8800",
