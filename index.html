@@ -18,58 +18,42 @@
       padding: 20px;
       text-align: center;
     }
+
     input[type="file"], button, select {
       margin-top: 10px;
       padding: 10px;
       font-size: 1em;
       border-radius: 6px;
     }
+
     button {
       background: #ff8800;
       color: #fff;
       border: none;
       cursor: pointer;
     }
+
     button:hover {
       background: #e67600;
     }
+
     select {
       background: #2c2c2c;
       color: #fff;
       border: 1px solid #666;
     }
+
     .result {
       margin-top: 30px;
       font-size: 1.2em;
     }
+
     .success { color: #00ff99; }
     .fail { color: #ff4444; }
     h1 { color: #ff8800; }
-
-    /* شاشة البداية */
-    #splashScreen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: url("bg1.png") no-repeat center center;
-      background-size: cover;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-      color: #ff8800;
-    }
   </style>
 </head>
 <body>
-
-  <!-- شاشة البداية -->
-  <div id="splashScreen">
-    <img src="icon.png" alt="Keynova Icon" style="width:120px; height:120px; margin-bottom:20px;">
-    <h2>🔐 Keynova Lock</h2>
-    <p style="color:#ccc;">حماية هندسية تبدأ بالبصمة البصرية</p>
-  </div>
 
   <h1>🔐 Keynova Lock</h1>
   <p>تحقق بصري قبل الوصول للإعدادات</p>
@@ -113,15 +97,7 @@
     <div id="protectionStatus" class="result"></div>
   </div>
 
-  <!-- الأكواد البرمجية -->
   <script>
-    // إخفاء شاشة البداية بعد 2.5 ثانية
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        document.getElementById("splashScreen").style.display = "none";
-      }, 2500);
-    });
-
     async function calculateHash(file) {
       const buffer = await file.arrayBuffer();
       const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
