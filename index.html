@@ -123,6 +123,14 @@
         resultDiv.innerHTML = "✅ تم التحقق بنجاح!";
         resultDiv.className = "result success";
         document.getElementById("securedActions").style.display = "block";
+
+        // ⏳ مؤقت الجلسة — يغلق الواجهة بعد 10 دقائق
+        setTimeout(() => {
+          alert("⏳ انتهت صلاحية الجلسة! يرجى التحقق من جديد.");
+          document.getElementById("securedActions").style.display = "none";
+          document.getElementById("keySection").style.display = "none";
+          document.getElementById("protectionSection").style.display = "none";
+        }, 600000); // 10 دقائق = 600000 ملي ثانية
       } else {
         resultDiv.innerHTML = "❌ الصورة لا تطابق المفتاح المخزن.";
         resultDiv.className = "result fail";
@@ -132,9 +140,13 @@
     async function setKey() {
       const file = document.getElementById("setKeyInput").files[0];
       if (!file) return alert("يرجى اختيار صورة لتعيينها كمفتاح جديد");
+
+      const confirmChange = confirm("هل أنت متأكد أنك تريد تغيير المفتاح الحالي؟");
+      if (!confirmChange) return;
+
       const hash = await calculateHash(file);
       localStorage.setItem("keynova_hash", hash);
-      alert("✅ تم حفظ المفتاح الجديد!");
+      alert("✅ تم حفظ المفتاح الجديد بنجاح!");
     }
 
     function goToKeyChange() {
