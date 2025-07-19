@@ -4,23 +4,16 @@
   <meta charset="UTF-8" />
   <title>Keynova Lock</title>
 
-  <!-- روابط PWA والأيقونة -->
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icon.png" type="image/png" />
   <meta name="theme-color" content="#ff8800" />
-
-  <!-- رابط التنسيقات الخارجية -->
   <link rel="stylesheet" href="styles/style.css" />
 
-  <!-- تسجيل Service Worker -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js");
     }
   </script>
-
-  <!-- استدعاء ملف الإعدادات -->
-  <script type="module" src="settings.js"></script>
 </head>
 <body>
 
@@ -65,30 +58,29 @@
   </div>
 
   <!-- الأكواد التنفيذية -->
-  <script type="module">
-    import {
-      calculateHash,
-      verifyImageAgainstStoredKey,
-      storeNewKey,
-      getStoredKeyHash,
-      removeStoredKey
-    } from './settings.js';
+  <script>
+    async function calculateHash(file) {
+      const buffer = await file.arrayBuffer();
+      const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
     async function verifyKey() {
       const file = document.getElementById("verifyInput").files[0];
       if (!file) return alert("يرجى اختيار صورة للتحقق منها");
 
-      const storedHash = getStoredKeyHash();
+      const storedHash = localStorage.getItem("keynova_hash");
       if (!storedHash) {
         alert("🔒 لا يوجد مفتاح محفوظ، يرجى تعيين مفتاح أولًا");
         goToKeyChange();
         return;
       }
 
-      const match = await verifyImageAgainstStoredKey(file, storedHash);
+      const currentHash = await calculateHash(file);
       const resultDiv = document.getElementById("result");
 
-      if (match) {
+      if (currentHash === storedHash) {
         resultDiv.innerHTML = "✅ تم التحقق بنجاح!";
         resultDiv.className = "result success";
         document.getElementById("securedActions").style.display = "block";
@@ -113,7 +105,7 @@
       if (!confirmChange) return;
 
       const hash = await calculateHash(file);
-      storeNewKey(hash);
+      localStorage.setItem("keynova_hash", hash);
       alert("✅ تم حفظ المفتاح الجديد بنجاح");
     }
 
@@ -161,7 +153,7 @@
       const confirmDelete = confirm("هل أنت متأكد من إزالة المفتاح؟");
       if (!confirmDelete) return;
 
-      removeStoredKey();
+      localStorage.removeItem("keynova_hash");
       alert("✅ تمت إزالة المفتاح");
       document.getElementById("securedActions").style.display = "none";
     }
